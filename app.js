@@ -13,7 +13,8 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://iankamar.github.io/task-manager-frontend/",
+    origin: "https://api.todoist.com/rest/v1",
+    //origin: "https://iankamar.github.io/task-manager-frontend/",
     //origin: "https://iankamar.github.io",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: ["Content-Type", "Authorization"],
