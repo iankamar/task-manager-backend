@@ -13,7 +13,8 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://iankamar.github.io",
+    origin: "https://iankamar.github.io/task-manager-frontend/",
+    //origin: "https://iankamar.github.io",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
