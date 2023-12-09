@@ -5,7 +5,6 @@ const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const dotenv = require("dotenv");
-// const authRoutes = require("./routes/authRoutes");
 
 dotenv.config();
 
@@ -13,9 +12,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://api.todoist.com/rest/v2/",
-    // origin: "https://iankamar.github.io/task-manager-frontend/",
-    //origin: "https://iankamar.github.io",
+    origin: "https://api.todoist.com/rest/v2",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
