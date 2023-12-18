@@ -7,6 +7,7 @@ const morgan = require("morgan");
 const path = require("path");
 const fs = require("fs");
 const dotenv = require("dotenv");
+const { requestLogger, errorLogger } = require("./logs/logger");
 
 dotenv.config();
 
@@ -60,6 +61,17 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+app.use((req, res, next) => {
+  requestLogger.info({
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    url: req.url,
+    status: res.statusCode,
+    ip: req.ip,
+  });
+  next();
+});
+
 const authRoutes = require("./routes/authRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 
@@ -68,6 +80,16 @@ app.use("/api/tasks", taskRoutes);
 
 app.get("/", (req, res) => {
   res.send("Task Manager API");
+});
+
+app.use((err, req, res, next) => {
+  errorLogger.error({
+    timestamp: new Date().toISOString(),
+    message: err.message,
+    stack: err.stack,
+    ip: req.ip,
+  });
+  next(err);
 });
 
 app.listen(PORT, () => {

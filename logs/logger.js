@@ -1,24 +1,32 @@
 const winston = require("winston");
+require("winston-daily-rotate-file");
 
-const logger = winston.createLogger({
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf(
-      (info) => `${info.timestamp} ${info.level}: ${info.message}`
-    )
-  ),
+const requestLogger = winston.createLogger({
+  level: "info",
+  format: winston.format.json(),
   transports: [
-    new winston.transports.File({ filename: "error.log", level: "error" }),
-    new winston.transports.File({ filename: "combined.log" }),
+    new winston.transports.DailyRotateFile({ filename: "logs/request.log" }),
+  ],
+});
+
+const errorLogger = winston.createLogger({
+  level: "error",
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.DailyRotateFile({ filename: "logs/error.log" }),
   ],
 });
 
 if (process.env.NODE_ENV !== "production") {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.simple(),
-    })
+  requestLogger.add(
+    new winston.transports.Console({ format: winston.format.simple() })
+  );
+  errorLogger.add(
+    new winston.transports.Console({ format: winston.format.simple() })
   );
 }
 
-module.exports = logger;
+module.exports = {
+  requestLogger,
+  errorLogger,
+};
