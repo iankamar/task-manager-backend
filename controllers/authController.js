@@ -45,7 +45,7 @@ exports.register = async (req, res) => {
       }
     );
   } catch (err) {
-    console.error(err.message);
+    console.error("Registration error:", err.message);
     res.status(500).send("Server error");
   }
 };
@@ -87,7 +87,7 @@ exports.login = async (req, res) => {
       }
     );
   } catch (err) {
-    console.error(err.message);
+    console.error("Login error:", err);
     res.status(500).send("Server error");
   }
 };
@@ -102,32 +102,26 @@ exports.forgotPassword = async (req, res) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    // Create reset token
     const resetToken = crypto.randomBytes(20).toString("hex");
 
-    // Hash the token and set to resetPasswordToken field
     user.resetPasswordToken = crypto
       .createHash("sha256")
       .update(resetToken)
       .digest("hex");
 
-    // Set token expiry date
-    user.resetPasswordExpire = Date.now() + 10 * (60 * 1000); // 10 minutes
+    user.resetPasswordExpire = Date.now() + 10 * (60 * 1000);
 
     await user.save();
 
-    // Create reset url
     const resetUrl = `http://localhost:3000/passwordreset/${resetToken}`;
 
     const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
     console.log(message);
 
-    // Here you would send the email. This could be done using a package like nodemailer
-
     res.status(200).json({ success: true, data: "Email sent" });
   } catch (err) {
-    console.error(err.message);
+    console.error("Forgot password error:", err);
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
 

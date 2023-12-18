@@ -4,6 +4,8 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const path = require("path");
+const fs = require("fs");
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -22,6 +24,11 @@ app.use(
     credentials: true,
   })
 );
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, "logs", "request.log"),
+  { flags: "a" }
+);
+app.use(morgan("combined", { stream: accessLogStream }));
 
 app.use(morgan("dev"));
 app.use(express.json());
