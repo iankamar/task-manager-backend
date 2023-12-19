@@ -9,6 +9,10 @@ const fs = require("fs");
 const dotenv = require("dotenv");
 const { requestLogger, errorLogger } = require("./logs/logger");
 
+const envFile =
+  process.env.NODE_ENV === "production" ? ".env" : ".envdevelopment";
+dotenv.config({ path: path.resolve(process.cwd(), envFile) });
+
 dotenv.config();
 
 const app = express();
@@ -17,6 +21,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
+      //"http://www.iankamar-taskmanager.cbu.net",
       "https://api.todoist.com/rest/v2",
       "https://api.todoist.com/rest/v1",
     ],
@@ -35,19 +40,14 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000,
-});
-
-mongoose.connection.on("connected", () => {
-  console.log("Connected to MongoDB");
-});
-
-mongoose.connection.on("error", (err) => {
-  console.error(`MongoDB connection error: ${err}`);
-});
+mongoose
+  .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/task_manager", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000,
+  })
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error(`MongoDB connection error: ${err}`));
 
 const { PORT = 3001 } = process.env;
 

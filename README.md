@@ -16,10 +16,26 @@ Secure coding practices have been applied to protect against common vulnerabilit
 
 Unit tests have been written for critical components to ensure functionality and reliability. End-to-end testing has been performed to validate the complete workflow.
 
-## Running the Application
+## Technologies and Techniques Used
 
-To start the application in development mode, navigate to the project directory in your terminal and run the following command:
+The project utilizes the following technologies:
 
-```bash
-npm run dev
-```
+- Node.js for the server environment.
+- Express.js for handling API requests.
+- MongoDB for the database.
+- Mongoose for object modeling and managing relationships between data.
+- JSON Web Tokens (JWT) for user authorization.
+
+## Running the Project
+
+Use the following commands to run the project:
+
+- `npm run start` — Launches the server.
+- `npm run dev` — Launches the server with the hot reload feature.
+
+## Accessing the Application
+
+To access the application, use the following domain:
+
+- Domain: [Ian Kamar's TASK MANAGER] (https://iankamar.github.io/task-manager-frontend/)
+<!-- (https://www.iankamar-taskmanager.cbu.net) -->
