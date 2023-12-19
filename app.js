@@ -22,7 +22,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       //"http://www.iankamar-taskmanager.cbu.net",
-      "https://api.todoist.com/rest/v2",
+      //"https://api.todoist.com/rest/v2",
       //"https://api.todoist.com/rest/v1",
     ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
