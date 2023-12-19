@@ -4,9 +4,22 @@
   "description": "The back-end project is focused on creating a server for the TASK MANAGER application.",
   "main": "index.js",
   "scripts": {
+    "lint": "npx eslint . --fix",
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "check-updates": "npm outdated"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
   },
   "keywords": [],
   "author": "",
@@ -26,5 +39,39 @@
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^4.7.1"
   },
-  "proxy": "http://localhost:3001"
+  "proxy": "http://localhost:3001",
+  "devDependencies": {
+    "eslint": "^8.2.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "nodemon": "^2.0.15"
+  },
+  "eslintConfig": {
+    "extends": "airbnb-base",
+    "rules": {
+      "no-underscore-dangle": [
+        "error",
+        {
+          "allow": [
+            "_id"
+          ]
+        }
+      ],
+      "no-console": "off",
+      "no-use-before-define": [
+        "error",
+        {
+          "functions": false,
+          "classes": false
+        }
+      ],
+      "import/extensions": "off",
+      "import/prefer-default-export": "off",
+      "eslint-disable": "off",
+      "eslint-disable-line": "off",
+      "eslint-disable-next-line": "off"
+    }
+  }
 }
