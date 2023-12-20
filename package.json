@@ -39,7 +39,6 @@
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^4.7.1"
   },
-  "proxy": "http://localhost:3001",
   "devDependencies": {
     "eslint": "^8.2.0",
     "eslint-config-airbnb-base": "^15.0.0",
