@@ -55,7 +55,7 @@ exports.updateTask = async (req, res) => {
     if (!task) return res.status(404).json({ msg: "Task not found" });
 
     if (task.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: "Not authorized" });
+      return res.status(403).json({ msg: "Not authorized" });
     }
 
     const updatedTask = await Task.findByIdAndUpdate(
@@ -78,7 +78,7 @@ exports.deleteTask = async (req, res) => {
     if (!task) return res.status(404).json({ msg: "Task not found" });
 
     if (task.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: "Not authorized" });
+      return res.status(403).json({ msg: "Not authorized" });
     }
 
     await Task.findByIdAndDelete(req.params.taskId);

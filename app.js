@@ -19,12 +19,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      //"http://www.iankamar-taskmanager.cbu.net",
-      //"https://api.todoist.com/rest/v2",
-      //"https://api.todoist.com/rest/v1",
-    ],
+    origin: ["http://localhost:3000"],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -82,6 +77,10 @@ app.get("/", (req, res) => {
   res.send("Task Manager API");
 });
 
+app.use((req, res, next) => {
+  res.status(404).json({ msg: "Route not found" });
+});
+
 app.use((err, req, res, next) => {
   errorLogger.error({
     timestamp: new Date().toISOString(),
@@ -89,7 +88,16 @@ app.use((err, req, res, next) => {
     stack: err.stack,
     ip: req.ip,
   });
-  next(err);
+
+  if (err.name === "ValidationError") {
+    return res.status(400).json({ msg: err.message });
+  }
+
+  if (err.name === "MongoError") {
+    return res.status(500).json({ msg: "Database error" });
+  }
+
+  return res.status(500).json({ msg: "Server error" });
 });
 
 app.listen(PORT, () => {
