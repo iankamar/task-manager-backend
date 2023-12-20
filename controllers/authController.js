@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
+const { validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const { validationResult } = require("express-validator");
 
 exports.register = async (req, res) => {
   const errors = validationResult(req);
@@ -12,13 +12,13 @@ exports.register = async (req, res) => {
   const { email, password, name } = req.body;
 
   try {
-    let user = await User.findOne({ email });
+    const user = await User.findOne({ email });
 
     if (user) {
       return res.status(400).json({ msg: "User already exists" });
     }
 
-    user = new User({
+    const newUser = new User({
       email,
       password,
       name,
@@ -26,13 +26,13 @@ exports.register = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
 
-    user.password = await bcrypt.hash(password, salt);
+    newUser.password = await bcrypt.hash(password, salt);
 
-    await user.save();
+    await newUser.save();
 
     const payload = {
       user: {
-        id: user.id,
+        id: newUser.id,
       },
     };
 
@@ -42,13 +42,14 @@ exports.register = async (req, res) => {
       { expiresIn: 360000 },
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        return res.json({ token });
       }
     );
   } catch (err) {
     console.error("Registration error:", err.message);
-    res.status(500).send("Server error");
+    return res.status(500).send("Server error");
   }
+  return null;
 };
 
 exports.login = async (req, res) => {
@@ -60,7 +61,7 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    let user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
       return res.status(400).json({ msg: "Invalid Credentials" });
@@ -84,20 +85,22 @@ exports.login = async (req, res) => {
       { expiresIn: 360000 },
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        return res.json({ token });
       }
     );
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).send("Server error");
+    return res.status(500).send("Server error");
   }
+  return null;
 };
 
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
+  let user;
 
   try {
-    const user = await User.findOne({ email });
+    user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ msg: "User not found" });
@@ -120,7 +123,7 @@ exports.forgotPassword = async (req, res) => {
 
     console.log(message);
 
-    res.status(200).json({ success: true, data: "Email sent" });
+    return res.status(200).json({ success: true, data: "Email sent" });
   } catch (err) {
     console.error("Forgot password error:", err);
     user.resetPasswordToken = undefined;
@@ -128,16 +131,16 @@ exports.forgotPassword = async (req, res) => {
 
     await user.save({ validateBeforeSave: false });
 
-    res.status(500).send("Server error");
+    return res.status(500).send("Server error");
   }
 };
 
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
-    res.json(user);
+    return res.json(user);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    return res.status(500).send("Server Error");
   }
 };

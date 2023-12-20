@@ -2,11 +2,11 @@ const Task = require("../models/Task");
 
 exports.getAllTasks = async (req, res) => {
   try {
-    const tasks = await Task.find();
-    res.json(tasks);
+    const tasks = await Task.find({ user: req.user._id });
+    return res.json(tasks);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    return res.status(500).send("Server Error");
   }
 };
 
@@ -22,23 +22,23 @@ exports.createTask = async (req, res) => {
 
     const task = await newTask.save();
 
-    res.json(task);
+    return res.json(task);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    return res.status(500).send("Server Error");
   }
 };
 
 exports.getTaskById = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findById(req.params.taskId);
 
     if (!task) return res.status(404).json({ msg: "Task not found" });
 
-    res.json(task);
+    return res.json(task);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    return res.status(500).send("Server Error");
   }
 };
 
@@ -50,7 +50,7 @@ exports.updateTask = async (req, res) => {
   if (description) taskFields.description = description;
 
   try {
-    let task = await Task.findById(req.params.id);
+    const task = await Task.findById(req.params.taskId);
 
     if (!task) return res.status(404).json({ msg: "Task not found" });
 
@@ -58,30 +58,34 @@ exports.updateTask = async (req, res) => {
       return res.status(401).json({ msg: "Not authorized" });
     }
 
-    task = await Task.findByIdAndUpdate(
-      req.params.id,
+    const updatedTask = await Task.findByIdAndUpdate(
+      req.params.taskId,
       { $set: taskFields },
       { new: true }
     );
 
-    res.json(task);
+    return res.json(updatedTask);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    return res.status(500).send("Server Error");
   }
 };
 
 exports.deleteTask = async (req, res) => {
   try {
-    let task = await Task.findById(req.params.id);
+    const task = await Task.findById(req.params.taskId);
 
     if (!task) return res.status(404).json({ msg: "Task not found" });
 
-    await Task.findByIdAndRemove(req.params.id);
+    if (task.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: "Not authorized" });
+    }
 
-    res.json({ msg: "Task removed" });
+    await Task.findByIdAndDelete(req.params.taskId);
+
+    return res.json({ msg: "Task removed" });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server Error");
+    return res.status(500).send("Server Error");
   }
 };
