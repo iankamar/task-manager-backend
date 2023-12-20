@@ -49,13 +49,17 @@
     "nodemon": "^2.0.15"
   },
   "eslintConfig": {
-    "extends": "airbnb-base",
+    "extends": [
+      "airbnb-base",
+      "prettier"
+    ],
     "rules": {
       "no-underscore-dangle": [
         "error",
         {
           "allow": [
-            "_id"
+            "_id",
+            "next"
           ]
         }
       ],
