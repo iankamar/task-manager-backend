@@ -1,13 +1,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const path = require("path");
 const fs = require("fs");
 const dotenv = require("dotenv");
-const { requestLogger, errorLogger } = require("./logs/logger");
+const { requestLogger } = require("./logs/logger");
+const errorHandler = require("./middleware/errorHandler");
+const limiter = require("./rateLimiter");
 
 const envFile =
   process.env.NODE_ENV === "production" ? ".env" : ".envdevelopment";
@@ -49,11 +50,6 @@ const { PORT = 3001 } = process.env;
 // Security headers
 app.use(helmet());
 
-// Rate limit to all requests
-const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-});
 app.use(limiter);
 
 app.use((req, res, next) => {
@@ -81,24 +77,7 @@ app.use((req, res, next) => {
   res.status(404).json({ msg: "Route not found" });
 });
 
-app.use((err, req, res, next) => {
-  errorLogger.error({
-    timestamp: new Date().toISOString(),
-    message: err.message,
-    stack: err.stack,
-    ip: req.ip,
-  });
-
-  if (err.name === "ValidationError") {
-    return res.status(400).json({ msg: err.message });
-  }
-
-  if (err.name === "MongoError") {
-    return res.status(500).json({ msg: "Database error" });
-  }
-
-  return res.status(500).json({ msg: "Server error" });
-});
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
