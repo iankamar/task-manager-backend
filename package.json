@@ -74,9 +74,13 @@
       ],
       "import/extensions": "off",
       "import/prefer-default-export": "off",
-      "eslint-disable": "off",
-      "eslint-disable-line": "off",
-      "eslint-disable-next-line": "off"
+      "no-restricted-syntax": [
+        "error",
+        {
+          "selector": "CallExpression[callee.object.name='eslint'][callee.property.name=/^disable/]",
+          "message": "ESLint disable comments are forbidden."
+        }
+      ]
     }
   }
 }
