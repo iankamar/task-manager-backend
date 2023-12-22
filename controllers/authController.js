@@ -1,10 +1,11 @@
 const bcrypt = require("bcrypt");
-const { validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { ERROR_MESSAGES, RESPONSE_MESSAGES } = require("../constants");
+const validationMiddleware = require("../middleware/validationMiddleware");
 
 exports.register = async (req, res) => {
-  const errors = validationResult(req);
+  const errors = validationMiddleware(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
@@ -15,7 +16,7 @@ exports.register = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user) {
-      return res.status(409).json({ msg: "User already exists" });
+      return res.status(409).json({ msg: ERROR_MESSAGES.USER_EXISTS });
     }
 
     const newUser = new User({
@@ -47,16 +48,13 @@ exports.register = async (req, res) => {
     );
   } catch (err) {
     console.error("Registration error:", err.message);
-    return res.status(500).send("Server error");
+    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
   }
   return null;
 };
 
-exports.login = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+exports.login = async (req, res, next) => {
+  validationMiddleware(req, res, next);
 
   const { email, password } = req.body;
 
@@ -64,13 +62,13 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
-      return res.status(401).json({ msg: "Invalid email" });
+      return res.status(401).json({ msg: ERROR_MESSAGES.INVALID_EMAIL });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(401).json({ msg: "Invalid password" });
+      return res.status(401).json({ msg: ERROR_MESSAGES.INVALID_PASSWORD });
     }
 
     const payload = {
@@ -90,7 +88,7 @@ exports.login = async (req, res) => {
     );
   } catch (err) {
     console.error("Login error:", err);
-    return res.status(500).send("Server error");
+    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
   }
   return null;
 };
@@ -103,7 +101,7 @@ exports.forgotPassword = async (req, res) => {
     user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ msg: "User not found" });
+      return res.status(404).json({ msg: ERROR_MESSAGES.USER_NOT_FOUND });
     }
 
     const resetToken = crypto.randomBytes(20).toString("hex");
@@ -123,7 +121,9 @@ exports.forgotPassword = async (req, res) => {
 
     console.log(message);
 
-    return res.status(200).json({ success: true, data: "Email sent" });
+    return res
+      .status(200)
+      .json({ success: true, data: RESPONSE_MESSAGES.EMAIL_SENT });
   } catch (err) {
     console.error("Forgot password error:", err);
     user.resetPasswordToken = undefined;
@@ -131,7 +131,7 @@ exports.forgotPassword = async (req, res) => {
 
     await user.save({ validateBeforeSave: false });
 
-    return res.status(500).send("Server error");
+    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
   }
 };
 
@@ -141,6 +141,6 @@ exports.getMe = async (req, res) => {
     return res.json(user);
   } catch (err) {
     console.error(err.message);
-    return res.status(500).send("Server Error");
+    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
   }
 };

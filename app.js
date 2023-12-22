@@ -9,6 +9,8 @@ const dotenv = require("dotenv");
 const { requestLogger } = require("./logs/logger");
 const errorHandler = require("./middleware/errorHandler");
 const limiter = require("./rateLimiter");
+const { MONGO_SERVER_ADDRESS } = require("./configuration");
+const { RESPONSE_MESSAGES, ERROR_MESSAGES } = require("./constants");
 
 const envFile =
   process.env.NODE_ENV === "production" ? ".env" : ".envdevelopment";
@@ -20,7 +22,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["https://www.iankamar-taskmanager.cbu.net"],
+    origin: ["https://iankamar-taskmanager.netlify.app"],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -37,17 +39,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 mongoose
-  .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/task_manager", {
+  .connect(MONGO_SERVER_ADDRESS || "mongodb://127.0.0.1:27017/task_manager", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     serverSelectionTimeoutMS: 5000,
   })
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error(`MongoDB connection error: ${err}`));
+  .then(() => console.log(RESPONSE_MESSAGES.MONGO_CONNECTED))
+  .catch(() => console.error(ERROR_MESSAGES.DATABASE_ERROR));
 
 const { PORT = 3001 } = process.env;
 
-// Security headers
 app.use(helmet());
 
 app.use(limiter);
@@ -63,18 +64,16 @@ app.use((req, res, next) => {
   next();
 });
 
-const authRoutes = require("./routes/authRoutes");
-const taskRoutes = require("./routes/taskRoutes");
+const routes = require("./routes");
 
-app.use("/api/auth", authRoutes);
-app.use("/api/tasks", taskRoutes);
+app.use("/api", routes);
 
 app.get("/", (req, res) => {
   res.send("Task Manager API");
 });
 
 app.use((req, res, next) => {
-  res.status(404).json({ msg: "Route not found" });
+  res.status(404).json({ msg: ERROR_MESSAGES.ROUTE_NOT_FOUND });
 });
 
 app.use(errorHandler);

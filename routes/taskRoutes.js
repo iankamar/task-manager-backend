@@ -1,7 +1,9 @@
 const express = require("express");
-const { check, validationResult } = require("express-validator");
+const { check } = require("express-validator");
 const taskController = require("../controllers/taskController");
 const authMiddleware = require("../middleware/authMiddleware");
+const NotFoundError = require("../error");
+const validationMiddleware = require("../middleware/validationMiddleware");
 
 const router = express.Router();
 
@@ -16,17 +18,25 @@ router.post(
       .isLength({ min: 1 })
       .withMessage("Description is required"),
   ],
-  (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    taskController.createTask(req, res);
-    return null;
-  }
+  validationMiddleware,
+  taskController.createTask
 );
 
-router.get("/:taskId", taskController.getTaskById);
+router.get("/:taskId", async (req, res, next) => {
+  const task = await taskController.getTaskById(req.params.taskId);
+  if (!task) {
+    next(
+      new NotFoundError(
+        "NotFoundError",
+        `Task not found with id ${req.params.taskId}`,
+        404
+      )
+    );
+  } else {
+    res.json(task);
+  }
+});
+
 router.put("/:taskId", taskController.updateTask);
 router.delete("/:taskId", taskController.deleteTask);
 
