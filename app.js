@@ -18,7 +18,10 @@ const rateLimitMiddleware = require("./middleware/rateLimitMiddleware");
 const errorHandler = require("./middleware/errorHandler");
 
 const corsOptions = {
-  origin: ["http://localhost:3000", "https://iankamar-taskmanager.netlify.app"],
+  origin: [
+    "http://localhost:3000",
+    "https://iankamar-taskmanager.azurewebsites.net",
+  ],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,

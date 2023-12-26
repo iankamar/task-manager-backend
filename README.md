@@ -37,4 +37,4 @@ Use the following commands to run the project:
 
 To access the application, use the following domain:
 
-- Domain: [Ian Kamar's TASK MANAGER](https://iankamar-taskmanager.netlify.app)
+- Domain: [Ian Kamar's TASK MANAGER](https://iankamar-taskmanager.azurewebsites.net)
