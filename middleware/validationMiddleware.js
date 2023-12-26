@@ -1,13 +1,48 @@
-const { validationResult } = require("express-validator");
-const NotFoundError = require("../error");
+const Joi = require("@hapi/joi");
 
-const validationMiddleware = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    next(new NotFoundError("ValidationError", errors.array(), 400));
-  } else {
-    next();
-  }
+// Register Validation
+const registerValidation = (data) => {
+  const schema = Joi.object({
+    name: Joi.string().required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+  });
+
+  return schema.validate(data);
 };
 
-module.exports = validationMiddleware;
+// Login Validation
+const loginValidation = (data) => {
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+  });
+
+  return schema.validate(data);
+};
+
+// Task Validation
+const taskValidation = (data) => {
+  const schema = Joi.object({
+    title: Joi.string().min(2).required(),
+    description: Joi.string().min(2).required(),
+    user: Joi.string().min(6).required(),
+  });
+
+  return schema.validate(data);
+};
+
+const forgotPasswordValidation = (data) => {
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+  });
+
+  return schema.validate(data);
+};
+
+module.exports = {
+  registerValidation,
+  loginValidation,
+  taskValidation,
+  forgotPasswordValidation,
+};

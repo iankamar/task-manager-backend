@@ -1,13 +1,23 @@
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
+const {
+  registerValidation,
+  loginValidation,
+  forgotPasswordValidation,
+} = require("../middleware/validationMiddleware");
 const User = require("../models/User");
-const { ERROR_MESSAGES, RESPONSE_MESSAGES } = require("../constants");
-const validationMiddleware = require("../middleware/validationMiddleware");
+const { ERROR_MESSAGES, RESPONSE_MESSAGES } = require("../config/constants");
+const envConfig = require("../config/envConfig");
+const logger = require("../config/logger");
 
-exports.register = async (req, res) => {
-  const errors = validationMiddleware(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+const saltLength = 10;
+
+exports.signup = async (req, res) => {
+  // validate request
+  const { error } = registerValidation(req.body);
+  if (error) {
+    return res.status(400).send({ message: error.details[0].message });
   }
 
   const { email, password, name } = req.body;
@@ -16,84 +26,99 @@ exports.register = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user) {
-      return res.status(409).json({ msg: ERROR_MESSAGES.USER_EXISTS });
+      return res.status(409).json({ message: ERROR_MESSAGES.USER_EXISTS });
     }
+    const salt = await bcrypt.genSalt(saltLength);
+    const hashPassword = await bcrypt.hash(password, salt);
 
     const newUser = new User({
       email,
-      password,
+      password: hashPassword,
       name,
     });
 
-    const salt = await bcrypt.genSalt(10);
+    const savedUser = await newUser.save();
 
-    newUser.password = await bcrypt.hash(password, salt);
+    // remove password
+    const userObject = savedUser.toObject();
+    delete userObject.password;
 
-    await newUser.save();
-
-    const payload = {
-      user: {
-        id: newUser.id,
-      },
-    };
-
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: 360000 },
-      (err, token) => {
-        if (err) throw err;
-        return res.json({ token });
-      }
-    );
+    return res.send({
+      user: savedUser,
+      message: "User successfully registered",
+    });
   } catch (err) {
+    logger.error(err.message, {
+      router: req.originalUrl,
+      method: req.method,
+      requestedTime: new Date().toLocaleString(),
+    });
     console.error("Registration error:", err.message);
     return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
   }
-  return null;
 };
 
-exports.login = async (req, res, next) => {
-  validationMiddleware(req, res, next);
-
+exports.signin = async (req, res, next) => {
+  // validate request
+  const { error } = loginValidation(req.body);
+  if (error) {
+    return res.status(400).send({ message: error.details[0].message });
+  }
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOneAndUpdate(
+      { email },
+      { lastLogin: new Date() }
+    ).select("-__v");
 
     if (!user) {
-      return res.status(401).json({ msg: ERROR_MESSAGES.INVALID_EMAIL });
+      return res.status(400).send({ message: ERROR_MESSAGES.INVALID_EMAIL });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(401).json({ msg: ERROR_MESSAGES.INVALID_PASSWORD });
+      return res.status(400).send({ message: ERROR_MESSAGES.INVALID_PASSWORD });
     }
 
     const payload = {
       user: {
-        id: user.id,
+        _id: user._id,
       },
     };
 
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: 360000 },
-      (err, token) => {
-        if (err) throw err;
-        return res.json({ token });
-      }
-    );
+    const accessToken = jwt.sign(payload, envConfig.jwtSecret, {
+      expiresIn: 360000,
+    });
+
+    // remove password
+    const userObject = user.toObject();
+    delete userObject.password;
+
+    const response = {
+      // user,
+      token: accessToken,
+    };
+
+    return res.send(response);
   } catch (err) {
+    logger.error(err.message, {
+      router: req.originalUrl,
+      method: req.method,
+      requestedTime: new Date().toLocaleString(),
+    });
     console.error("Login error:", err);
     return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
   }
-  return null;
 };
 
 exports.forgotPassword = async (req, res) => {
+  // validate request
+  const { error } = forgotPasswordValidation(req.body);
+  if (error) {
+    return res.status(400).send({ message: error.details[0].message });
+  }
   const { email } = req.body;
   let user;
 
@@ -101,7 +126,7 @@ exports.forgotPassword = async (req, res) => {
     user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ msg: ERROR_MESSAGES.USER_NOT_FOUND });
+      return res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
     }
 
     const resetToken = crypto.randomBytes(20).toString("hex");
@@ -125,22 +150,17 @@ exports.forgotPassword = async (req, res) => {
       .status(200)
       .json({ success: true, data: RESPONSE_MESSAGES.EMAIL_SENT });
   } catch (err) {
+    logger.error(err.message, {
+      router: req.originalUrl,
+      method: req.method,
+      requestedTime: new Date().toLocaleString(),
+    });
     console.error("Forgot password error:", err);
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
 
     await user.save({ validateBeforeSave: false });
 
-    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
-  }
-};
-
-exports.getMe = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("-password");
-    return res.json(user);
-  } catch (err) {
-    console.error(err.message);
-    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
+    return res.status(500).send({ message: ERROR_MESSAGES.SERVER_ERROR });
   }
 };

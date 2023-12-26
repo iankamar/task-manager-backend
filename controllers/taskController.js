@@ -1,64 +1,90 @@
+const { ERROR_MESSAGES, RESPONSE_MESSAGES } = require("../config/constants");
+const logger = require("../config/logger");
+const { taskValidation } = require("../middleware/validationMiddleware");
 const Task = require("../models/Task");
-const { ERROR_MESSAGES, RESPONSE_MESSAGES } = require("../constants");
 
 exports.getAllTasks = async (req, res) => {
   try {
     const tasks = await Task.find({ user: req.user._id });
-    return res.json(tasks);
+    return res.send(tasks);
   } catch (err) {
-    console.error(err.message);
-    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
+    logger.error(ERROR_MESSAGES.SERVER_ERROR, {
+      router: req.originalUrl,
+      method: req.method,
+      requestedTime: new Date().toLocaleString(),
+    });
+    return res.status(500).send({ message: ERROR_MESSAGES.SERVER_ERROR });
   }
 };
 
 exports.createTask = async (req, res) => {
+  const { error } = taskValidation(req.body);
+  if (error) {
+    return res.status(400).send({ message: error.details[0].message });
+  }
   const { title, description } = req.body;
 
   try {
     const newTask = new Task({
       title,
       description,
-      user: req.user.id,
+      user: req.user._id,
     });
 
     const task = await newTask.save();
 
-    return res.json(task);
+    return res.send(task);
   } catch (err) {
+    logger.error(err.message, {
+      router: req.originalUrl,
+      method: req.method,
+      requestedTime: new Date().toLocaleString(),
+    });
     console.error(err.message);
-    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
+    return res.status(500).send({ message: ERROR_MESSAGES.SERVER_ERROR });
   }
 };
 
 exports.getTaskById = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.taskId);
+    const task = await Task.findById(req.params.taskId).select("-__v");
 
     if (!task)
-      return res.status(404).json({ msg: ERROR_MESSAGES.TASK_NOT_FOUND });
+      return res.status(404).send({ message: ERROR_MESSAGES.TASK_NOT_FOUND });
 
     return res.json(task);
   } catch (err) {
+    logger.error(err.message, {
+      router: req.originalUrl,
+      method: req.method,
+      requestedTime: new Date().toLocaleString(),
+    });
     console.error(err.message);
-    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
+    return res.status(500).send({ message: ERROR_MESSAGES.SERVER_ERROR });
   }
 };
 
 exports.updateTask = async (req, res) => {
+  const { error } = taskValidation(req.body);
+  if (error) {
+    return res.status(400).send({ message: error.details[0].message });
+  }
   const { title, description } = req.body;
 
-  const taskFields = {};
-  if (title) taskFields.title = title;
-  if (description) taskFields.description = description;
+  const taskFields = {
+    title,
+    description,
+    user: req.user,
+  };
 
   try {
     const task = await Task.findById(req.params.taskId);
 
     if (!task)
-      return res.status(404).json({ msg: ERROR_MESSAGES.TASK_NOT_FOUND });
+      return res.status(404).json({ message: ERROR_MESSAGES.TASK_NOT_FOUND });
 
     if (task.user.toString() !== req.user.id) {
-      return res.status(403).json({ msg: ERROR_MESSAGES.NOT_AUTHORIZED });
+      return res.status(403).json({ message: ERROR_MESSAGES.NOT_AUTHORIZED });
     }
 
     const updatedTask = await Task.findByIdAndUpdate(
@@ -67,10 +93,15 @@ exports.updateTask = async (req, res) => {
       { new: true }
     );
 
-    return res.json(updatedTask);
+    return res.send(updatedTask);
   } catch (err) {
+    logger.error(err.message, {
+      router: req.originalUrl,
+      method: req.method,
+      requestedTime: new Date().toLocaleString(),
+    });
     console.error(err.message);
-    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
+    return res.status(500).send({ message: ERROR_MESSAGES.SERVER_ERROR });
   }
 };
 
@@ -79,17 +110,22 @@ exports.deleteTask = async (req, res) => {
     const task = await Task.findById(req.params.taskId);
 
     if (!task)
-      return res.status(404).json({ msg: ERROR_MESSAGES.TASK_NOT_FOUND });
+      return res.status(404).json({ message: ERROR_MESSAGES.TASK_NOT_FOUND });
 
     if (task.user.toString() !== req.user.id) {
-      return res.status(403).json({ msg: ERROR_MESSAGES.NOT_AUTHORIZED });
+      return res.status(403).json({ message: ERROR_MESSAGES.NOT_AUTHORIZED });
     }
 
     await Task.findByIdAndDelete(req.params.taskId);
 
-    return res.json({ msg: RESPONSE_MESSAGES.TASK_REMOVED });
+    return res.send({ message: RESPONSE_MESSAGES.TASK_REMOVED });
   } catch (err) {
+    logger.error(err.message, {
+      router: req.originalUrl,
+      method: req.method,
+      requestedTime: new Date().toLocaleString(),
+    });
     console.error(err.message);
-    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
+    return res.status(500).send({ message: ERROR_MESSAGES.SERVER_ERROR });
   }
 };
