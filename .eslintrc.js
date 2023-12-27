@@ -21,8 +21,17 @@ module.exports = {
   },
   rules: {
     "no-underscore-dangle": ["error", { allow: ["_id"] }],
-    "no-console": "off",
-    "max-classes-per-file": ["error", 8],
-    "no-unused-vars": ["error", { argsIgnorePattern: "next" }],
+    "no-restricted-syntax": [
+      "error",
+      {
+        selector:
+          'CallExpression[callee.object.name="eslint"][callee.property.name=/^disable/]',
+        message: "Disabling eslint rules is not allowed.",
+      },
+      {
+        selector: 'CallExpression[callee.name="next"]',
+        message: 'Using "next" is allowed.',
+      },
+    ],
   },
 };

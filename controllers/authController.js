@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
+const { loggers } = require("winston");
 const {
   registerValidation,
   loginValidation,
@@ -53,12 +54,12 @@ exports.register = async (req, res) => {
       method: req.method,
       requestedTime: new Date().toLocaleString(),
     });
-    console.error("Registration error:", err.message);
+    logger.error("Registration error:", err.message);
     return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
   }
 };
 
-exports.login = async (req, res, next) => {
+exports.login = async (req, res) => {
   // validate request
   const { error } = loginValidation(req.body);
   if (error) {
@@ -108,7 +109,7 @@ exports.login = async (req, res, next) => {
       method: req.method,
       requestedTime: new Date().toLocaleString(),
     });
-    console.error("Login error:", err);
+    loggers.error("Login error:", err);
     return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
   }
 };
@@ -144,7 +145,7 @@ exports.forgotPassword = async (req, res) => {
 
     const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
-    console.log(message);
+    logger.info(message);
 
     return res
       .status(200)
@@ -155,7 +156,7 @@ exports.forgotPassword = async (req, res) => {
       method: req.method,
       requestedTime: new Date().toLocaleString(),
     });
-    console.error("Forgot password error:", err);
+    logger.error(`Forgot password error: ${err}`);
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
 

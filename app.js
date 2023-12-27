@@ -34,8 +34,10 @@ mongoose
   .connect(envConfig.mongoURI, {
     serverSelectionTimeoutMS: 5000,
   })
-  .then(() => console.log(RESPONSE_MESSAGES.MONGO_CONNECTED))
-  .catch(() => console.error(ERROR_MESSAGES.DATABASE_ERROR));
+  .then(() => logger.info(RESPONSE_MESSAGES.MONGO_CONNECTED))
+  .catch((error) =>
+    logger.error(`${ERROR_MESSAGES.DATABASE_ERROR}: ${error.message}`)
+  );
 
 const { PORT } = envConfig;
 
@@ -53,7 +55,7 @@ app.get("/", (req, res) => {
 
 app.use("/api", routes);
 
-app.use((req, res, next) => {
+app.use((req, res) => {
   logger.error(ERROR_MESSAGES.ROUTE_NOT_FOUND, {
     router: req.originalUrl,
     method: req.method,
@@ -65,5 +67,5 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  logger.info(`Server is running on port ${PORT}`);
 });

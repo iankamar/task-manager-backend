@@ -40,7 +40,6 @@ exports.createTask = async (req, res) => {
       method: req.method,
       requestedTime: new Date().toLocaleString(),
     });
-    console.error(err.message);
     return res.status(500).send({ message: ERROR_MESSAGES.SERVER_ERROR });
   }
 };
@@ -59,7 +58,6 @@ exports.getTaskById = async (req, res) => {
       method: req.method,
       requestedTime: new Date().toLocaleString(),
     });
-    console.error(err.message);
     return res.status(500).send({ message: ERROR_MESSAGES.SERVER_ERROR });
   }
 };
@@ -100,7 +98,6 @@ exports.updateTask = async (req, res) => {
       method: req.method,
       requestedTime: new Date().toLocaleString(),
     });
-    console.error(err.message);
     return res.status(500).send({ message: ERROR_MESSAGES.SERVER_ERROR });
   }
 };
@@ -125,7 +122,6 @@ exports.deleteTask = async (req, res) => {
       method: req.method,
       requestedTime: new Date().toLocaleString(),
     });
-    console.error(err.message);
     return res.status(500).send({ message: ERROR_MESSAGES.SERVER_ERROR });
   }
 };
