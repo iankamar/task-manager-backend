@@ -2,15 +2,20 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { loggers } = require("winston");
+const { ERROR_MESSAGES, RESPONSE_MESSAGES } = require("../config/constants");
+const envConfig = require("../config/envConfig");
+const logger = require("../config/logger");
+const {
+  BadRequestError,
+  UnauthorizedError,
+  InternalServerError,
+} = require("../middleware/error");
+const User = require("../models/User");
 const {
   registerValidation,
   loginValidation,
   forgotPasswordValidation,
 } = require("../middleware/validationMiddleware");
-const User = require("../models/User");
-const { ERROR_MESSAGES, RESPONSE_MESSAGES } = require("../config/constants");
-const envConfig = require("../config/envConfig");
-const logger = require("../config/logger");
 
 const saltLength = 10;
 
@@ -18,7 +23,9 @@ exports.register = async (req, res) => {
   // validate request
   const { error } = registerValidation(req.body);
   if (error) {
-    return res.status(400).send({ message: error.details[0].message });
+    return res
+      .status(BadRequestError.statusCode)
+      .send({ message: error.details[0].message });
   }
 
   const { email, password, name } = req.body;
@@ -27,7 +34,9 @@ exports.register = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user) {
-      return res.status(409).json({ message: ERROR_MESSAGES.USER_EXISTS });
+      return res
+        .status(ConflictError.statusCode)
+        .json({ message: ERROR_MESSAGES.USER_EXISTS });
     }
     const salt = await bcrypt.genSalt(saltLength);
     const hashPassword = await bcrypt.hash(password, salt);
@@ -55,7 +64,9 @@ exports.register = async (req, res) => {
       requestedTime: new Date().toLocaleString(),
     });
     logger.error("Registration error:", err.message);
-    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
+    return res
+      .status(InternalServerError.statusCode)
+      .send(ERROR_MESSAGES.SERVER_ERROR);
   }
 };
 
@@ -63,7 +74,9 @@ exports.login = async (req, res) => {
   // validate request
   const { error } = loginValidation(req.body);
   if (error) {
-    return res.status(400).send({ message: error.details[0].message });
+    return res
+      .status(BadRequestError.statusCode)
+      .send({ message: error.details[0].message });
   }
   const { email, password } = req.body;
 
@@ -74,13 +87,17 @@ exports.login = async (req, res) => {
     ).select("-__v");
 
     if (!user) {
-      return res.status(400).send({ message: ERROR_MESSAGES.INVALID_EMAIL });
+      return res
+        .status(BadRequestError.statusCode)
+        .send({ message: ERROR_MESSAGES.INVALID_EMAIL });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(400).send({ message: ERROR_MESSAGES.INVALID_PASSWORD });
+      return res
+        .status(BadRequestError.statusCode)
+        .send({ message: ERROR_MESSAGES.INVALID_PASSWORD });
     }
 
     const payload = {
@@ -110,7 +127,9 @@ exports.login = async (req, res) => {
       requestedTime: new Date().toLocaleString(),
     });
     loggers.error("Login error:", err);
-    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
+    return res
+      .status(InternalServerError.statusCode)
+      .send(ERROR_MESSAGES.SERVER_ERROR);
   }
 };
 
@@ -118,7 +137,9 @@ exports.forgotPassword = async (req, res) => {
   // validate request
   const { error } = forgotPasswordValidation(req.body);
   if (error) {
-    return res.status(400).send({ message: error.details[0].message });
+    return res
+      .status(BadRequestError.statusCode)
+      .send({ message: error.details[0].message });
   }
   const { email } = req.body;
   let user;
@@ -127,7 +148,9 @@ exports.forgotPassword = async (req, res) => {
     user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
+      return res
+        .status(NotFoundError.statusCode)
+        .json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
     }
 
     const resetToken = crypto.randomBytes(20).toString("hex");
@@ -162,6 +185,8 @@ exports.forgotPassword = async (req, res) => {
 
     await user.save({ validateBeforeSave: false });
 
-    return res.status(500).send({ message: ERROR_MESSAGES.SERVER_ERROR });
+    return res
+      .status(InternalServerError.statusCode)
+      .send({ message: ERROR_MESSAGES.SERVER_ERROR });
   }
 };

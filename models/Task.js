@@ -8,6 +8,7 @@ const taskSchema = new mongoose.Schema(
     },
     description: {
       type: String,
+      equired: true,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,

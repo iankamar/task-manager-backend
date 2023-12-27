@@ -1,6 +1,7 @@
 const { ERROR_MESSAGES } = require("../config/constants");
 const User = require("../models/User");
 const logger = require("../config/logger");
+const { NotFoundError, InternalServerError } = require("../middleware/error");
 
 exports.getMe = async (req, res) => {
   try {
@@ -8,6 +9,8 @@ exports.getMe = async (req, res) => {
     return res.send(user);
   } catch (err) {
     logger.error(err.message);
-    return res.status(500).send(ERROR_MESSAGES.SERVER_ERROR);
+    return res
+      .status(InternalServerError.statusCode)
+      .send(ERROR_MESSAGES.SERVER_ERROR);
   }
 };

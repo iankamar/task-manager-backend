@@ -4,7 +4,9 @@ dotenv.config();
 
 module.exports = {
   nodeEnv: process.env.NODE_ENV || "development",
-  mongoURI: process.env.MONGO_URI || "mongodb://127.0.0.1:27017/task_manager",
+  mongoURI:
+    process.env.MONGO_URI ||
+    "mongodb+srv://prodDbUser:H0NJ4zLObmAnle4i@iankamar.ngwphlf.mongodb.net",
   PORT: process.env.PORT || 3001,
   jwtSecret:
     process.env.JWT_SECRET ||
