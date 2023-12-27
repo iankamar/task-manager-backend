@@ -1,7 +1,7 @@
 const { ERROR_MESSAGES } = require("../config/constants");
 const User = require("../models/User");
 const logger = require("../config/logger");
-const { NotFoundError, InternalServerError } = require("../middleware/error");
+const { InternalServerError } = require("../middleware/error");
 
 exports.getMe = async (req, res) => {
   try {

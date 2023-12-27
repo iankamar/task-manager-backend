@@ -26,6 +26,12 @@ The project utilizes the following technologies:
 - Mongoose for object modeling and managing relationships between data.
 - JSON Web Tokens (JWT) for user authorization.
 
+## Backend Domain
+
+Backend Domain
+
+- Domain: [BACKEND DOMAIN](api-iankamar-taskmanager.azurewebsites.net)
+
 ## Running the Project
 
 Use the following commands to run the project:

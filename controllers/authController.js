@@ -5,11 +5,7 @@ const { loggers } = require("winston");
 const { ERROR_MESSAGES, RESPONSE_MESSAGES } = require("../config/constants");
 const envConfig = require("../config/envConfig");
 const logger = require("../config/logger");
-const {
-  BadRequestError,
-  UnauthorizedError,
-  InternalServerError,
-} = require("../middleware/error");
+const { BadRequestError, InternalServerError } = require("../middleware/error");
 const User = require("../models/User");
 const {
   registerValidation,
