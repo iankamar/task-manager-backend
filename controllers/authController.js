@@ -18,7 +18,7 @@ const {
 
 const saltLength = 10;
 
-exports.register = async (req, res) => {
+exports.signup = async (req, res) => {
   // validate request
   const { error } = registerValidation(req.body);
   if (error) {
@@ -69,7 +69,7 @@ exports.register = async (req, res) => {
   }
 };
 
-exports.login = async (req, res) => {
+exports.signin = async (req, res) => {
   // validate request
   const { error } = loginValidation(req.body);
   if (error) {
