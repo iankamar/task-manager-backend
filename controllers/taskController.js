@@ -10,12 +10,10 @@ const ForbiddenError = require("../errors/ForbiddenError");
 const { taskValidation } = require("../middleware/validationMiddleware");
 const Task = require("../models/Task");
 
-exports.getAllTasks = async (req, res) => {
+exports.getAllTasks = async (req, res, next) => {
   try {
     if (!req.user || !req.user._id) {
-      return res
-        .status(UnauthorizedError.statusCode)
-        .send({ message: ERROR_MESSAGES.UNAUTHORIZED });
+      return next(new UnauthorizedError(ERROR_MESSAGES.UNAUTHORIZED));
     }
     const tasks = await Task.find({ user: req.user._id });
     return res.send(tasks);
@@ -25,25 +23,22 @@ exports.getAllTasks = async (req, res) => {
       method: req.method,
       requestedTime: new Date().toLocaleString(),
     });
-    return res
-      .status(InternalServerError.statusCode)
-      .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+    return next(new InternalServerError(ERROR_MESSAGES.SERVER_ERROR));
   }
 };
 
-exports.createTask = async (req, res) => {
+exports.createTask = async (req, res, next) => {
   const { error } = taskValidation(req.body);
   if (error) {
-    return res
-      .status(BadRequestError.statusCode)
-      .send({ message: error.details[0].message });
+    return next(new BadRequestError(error.details[0].message));
   }
-  const { title, description } = req.body;
+  const { title, description, status } = req.body;
 
   try {
     const newTask = new Task({
       title,
       description,
+      status,
       user: req.user._id,
     });
 
@@ -56,20 +51,15 @@ exports.createTask = async (req, res) => {
       method: req.method,
       requestedTime: new Date().toLocaleString(),
     });
-    return res
-      .status(InternalServerError.statusCode)
-      .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+    return next(new InternalServerError(ERROR_MESSAGES.SERVER_ERROR));
   }
 };
 
-exports.getTaskById = async (req, res) => {
+exports.getTaskById = async (req, res, next) => {
   try {
     const task = await Task.findById(req.params.taskId).select("-__v");
 
-    if (!task)
-      return res
-        .status(NotFoundError.statusCode)
-        .send({ message: ERROR_MESSAGES.TASK_NOT_FOUND });
+    if (!task) return next(new NotFoundError(ERROR_MESSAGES.TASK_NOT_FOUND));
 
     return res.json(task);
   } catch (err) {
@@ -78,39 +68,31 @@ exports.getTaskById = async (req, res) => {
       method: req.method,
       requestedTime: new Date().toLocaleString(),
     });
-    return res
-      .status(InternalServerError.statusCode)
-      .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+    return next(new InternalServerError(ERROR_MESSAGES.SERVER_ERROR));
   }
 };
 
-exports.updateTask = async (req, res) => {
+exports.updateTask = async (req, res, next) => {
   const { error } = taskValidation(req.body);
   if (error) {
-    return res
-      .status(BadRequestError.statusCode)
-      .send({ message: error.details[0].message });
+    return next(new BadRequestError(error.details[0].message));
   }
-  const { title, description } = req.body;
+  const { title, description, status } = req.body;
 
   const taskFields = {
     title,
     description,
+    status,
     user: req.user,
   };
 
   try {
     const task = await Task.findById(req.params.taskId);
 
-    if (!task)
-      return res
-        .status(NotFoundError.statusCode)
-        .json({ message: ERROR_MESSAGES.TASK_NOT_FOUND });
+    if (!task) return next(new NotFoundError(ERROR_MESSAGES.TASK_NOT_FOUND));
 
     if (task.user.toString() !== req.user.id) {
-      return res
-        .status(ForbiddenError.statusCode)
-        .json({ message: ERROR_MESSAGES.NOT_AUTHORIZED });
+      return next(new ForbiddenError(ERROR_MESSAGES.NOT_AUTHORIZED));
     }
 
     const updatedTask = await Task.findByIdAndUpdate(
@@ -126,25 +108,18 @@ exports.updateTask = async (req, res) => {
       method: req.method,
       requestedTime: new Date().toLocaleString(),
     });
-    return res
-      .status(InternalServerError.statusCode)
-      .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+    return next(new InternalServerError(ERROR_MESSAGES.SERVER_ERROR));
   }
 };
 
-exports.deleteTask = async (req, res) => {
+exports.deleteTask = async (req, res, next) => {
   try {
     const task = await Task.findById(req.params.taskId);
 
-    if (!task)
-      return res
-        .status(NotFoundError.statusCode)
-        .json({ message: ERROR_MESSAGES.TASK_NOT_FOUND });
+    if (!task) return next(new NotFoundError(ERROR_MESSAGES.TASK_NOT_FOUND));
 
     if (task.user.toString() !== req.user.id) {
-      return res
-        .status(ForbiddenError.statusCode)
-        .json({ message: ERROR_MESSAGES.NOT_AUTHORIZED });
+      return next(new ForbiddenError(ERROR_MESSAGES.NOT_AUTHORIZED));
     }
 
     await Task.findByIdAndDelete(req.params.taskId);
@@ -156,8 +131,6 @@ exports.deleteTask = async (req, res) => {
       method: req.method,
       requestedTime: new Date().toLocaleString(),
     });
-    return res
-      .status(InternalServerError.statusCode)
-      .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+    return next(new InternalServerError(ERROR_MESSAGES.SERVER_ERROR));
   }
 };

@@ -18,13 +18,11 @@ const {
 
 const saltLength = 10;
 
-exports.signup = async (req, res) => {
+exports.signup = async (req, res, next) => {
   // validate request
   const { error } = registerValidation(req.body);
   if (error) {
-    return res
-      .status(BadRequestError.statusCode)
-      .send({ message: error.details[0].message });
+    return next(new BadRequestError(error.details[0].message));
   }
 
   const { email, password, name } = req.body;
@@ -33,10 +31,9 @@ exports.signup = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (user) {
-      return res
-        .status(ConflictError.statusCode)
-        .json({ message: ERROR_MESSAGES.USER_EXISTS });
+      return next(new ConflictError(ERROR_MESSAGES.USER_EXISTS));
     }
+
     const salt = await bcrypt.genSalt(saltLength);
     const hashPassword = await bcrypt.hash(password, salt);
 
@@ -53,7 +50,7 @@ exports.signup = async (req, res) => {
     delete userObject.password;
 
     return res.send({
-      user: savedUser,
+      user: userObject,
       message: "User successfully registered",
     });
   } catch (err) {
@@ -63,19 +60,15 @@ exports.signup = async (req, res) => {
       requestedTime: new Date().toLocaleString(),
     });
     logger.error("Registration error:", err.message);
-    return res
-      .status(InternalServerError.statusCode)
-      .send(ERROR_MESSAGES.SERVER_ERROR);
+    return next(new InternalServerError(ERROR_MESSAGES.SERVER_ERROR));
   }
 };
 
-exports.signin = async (req, res) => {
+exports.signin = async (req, res, next) => {
   // validate request
   const { error } = loginValidation(req.body);
   if (error) {
-    return res
-      .status(BadRequestError.statusCode)
-      .send({ message: error.details[0].message });
+    return next(new BadRequestError(error.details[0].message));
   }
   const { email, password } = req.body;
 
@@ -86,17 +79,13 @@ exports.signin = async (req, res) => {
     ).select("-__v");
 
     if (!user) {
-      return res
-        .status(BadRequestError.statusCode)
-        .send({ message: ERROR_MESSAGES.INVALID_EMAIL });
+      return next(new BadRequestError(ERROR_MESSAGES.INVALID_EMAIL));
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res
-        .status(BadRequestError.statusCode)
-        .send({ message: ERROR_MESSAGES.INVALID_PASSWORD });
+      return next(new BadRequestError(ERROR_MESSAGES.INVALID_PASSWORD));
     }
 
     const payload = {
@@ -126,19 +115,15 @@ exports.signin = async (req, res) => {
       requestedTime: new Date().toLocaleString(),
     });
     loggers.error("Login error:", err);
-    return res
-      .status(InternalServerError.statusCode)
-      .send(ERROR_MESSAGES.SERVER_ERROR);
+    return next(new InternalServerError(ERROR_MESSAGES.SERVER_ERROR));
   }
 };
 
-exports.forgotPassword = async (req, res) => {
+exports.forgotPassword = async (req, res, next) => {
   // validate request
   const { error } = forgotPasswordValidation(req.body);
   if (error) {
-    return res
-      .status(BadRequestError.statusCode)
-      .send({ message: error.details[0].message });
+    return next(new BadRequestError(error.details[0].message));
   }
   const { email } = req.body;
   let user;
@@ -147,9 +132,7 @@ exports.forgotPassword = async (req, res) => {
     user = await User.findOne({ email });
 
     if (!user) {
-      return res
-        .status(NotFoundError.statusCode)
-        .json({ message: ERROR_MESSAGES.USER_NOT_FOUND });
+      return next(new NotFoundError(ERROR_MESSAGES.USER_NOT_FOUND));
     }
 
     const resetToken = crypto.randomBytes(20).toString("hex");
@@ -184,8 +167,6 @@ exports.forgotPassword = async (req, res) => {
 
     await user.save({ validateBeforeSave: false });
 
-    return res
-      .status(InternalServerError.statusCode)
-      .send({ message: ERROR_MESSAGES.SERVER_ERROR });
+    return next(new InternalServerError(ERROR_MESSAGES.SERVER_ERROR));
   }
 };
