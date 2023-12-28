@@ -56,20 +56,10 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api", routes);
-/*
+
 app.use((req, res) => {
   const error = new NotFoundError(ERROR_MESSAGES.ROUTE_NOT_FOUND);
   errorHandler(error, req, res);
-});
-*/
-
-app.use((req, res, next) => {
-  logger.error(ERROR_MESSAGES.ROUTE_NOT_FOUND, {
-    router: req.originalUrl,
-    method: req.method,
-    requestedTime: new Date().toLocaleString(),
-  });
-  res.status(404).json({ message: ERROR_MESSAGES.ROUTE_NOT_FOUND });
 });
 
 app.use(errorHandler);
