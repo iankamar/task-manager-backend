@@ -28,10 +28,6 @@ module.exports = {
           'CallExpression[callee.object.name="eslint"][callee.property.name=/^disable/]',
         message: "Disabling eslint rules is not allowed.",
       },
-      {
-        selector: 'CallExpression[callee.name="next"]',
-        message: 'Using "next" is allowed.',
-      },
     ],
   },
 };

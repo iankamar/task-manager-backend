@@ -1,11 +1,12 @@
 const { ERROR_MESSAGES, RESPONSE_MESSAGES } = require("../config/constants");
 const logger = require("../config/logger");
-const {
-  NotFoundError,
-  ForbiddenError,
-  BadRequestError,
-  InternalServerError,
-} = require("../middleware/error");
+
+const BadRequestError = require("../errors/BadRequestError");
+const NotFoundError = require("../errors/NotFoundError");
+const InternalServerError = require("../errors/InternalServerError");
+const UnauthorizedError = require("../errors/UnauthorizedError");
+const ForbiddenError = require("../errors/ForbiddenError");
+
 const { taskValidation } = require("../middleware/validationMiddleware");
 const Task = require("../models/Task");
 

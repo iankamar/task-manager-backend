@@ -4,7 +4,9 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const dotenv = require("dotenv");
+const NotFoundError = require("./errors/NotFoundError");
 const { RESPONSE_MESSAGES, ERROR_MESSAGES } = require("./config/constants");
+const InternalServerError = require("./errors/InternalServerError");
 
 dotenv.config();
 const envConfig = require("./config/envConfig");
@@ -61,6 +63,14 @@ app.use((req, res) => {
 });
 
 app.use(errorHandler);
+
+app.use((err, req, res) => {
+  let error = err;
+  if (!(error instanceof InternalServerError)) {
+    error = new InternalServerError();
+  }
+  res.status(err.statusCode).json({ message: err.message });
+});
 
 app.listen(PORT, () => {
   logger.info(`Server is running on port ${PORT}`);

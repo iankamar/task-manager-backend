@@ -5,7 +5,10 @@ const { loggers } = require("winston");
 const { ERROR_MESSAGES, RESPONSE_MESSAGES } = require("../config/constants");
 const envConfig = require("../config/envConfig");
 const logger = require("../config/logger");
-const { BadRequestError, InternalServerError } = require("../middleware/error");
+const BadRequestError = require("../errors/BadRequestError");
+const NotFoundError = require("../errors/NotFoundError");
+const ConflictError = require("../errors/ConflictError");
+const InternalServerError = require("../errors/InternalServerError");
 const User = require("../models/User");
 const {
   registerValidation,
