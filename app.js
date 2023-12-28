@@ -18,7 +18,7 @@ const routes = require("./routes");
 const logger = require("./config/logger");
 const rateLimitMiddleware = require("./middleware/rateLimitMiddleware");
 const errorHandler = require("./middleware/errorHandler");
-
+//
 const corsOptions = {
   origin: [
     "http://localhost:3000",
