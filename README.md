@@ -26,6 +26,12 @@ The project utilizes the following technologies:
 - Mongoose for object modeling and managing relationships between data.
 - JSON Web Tokens (JWT) for user authorization.
 
+## Backend Domain
+
+Backend Domain
+
+- Domain: [BACKEND DOMAIN](https://api-iankamar-taskmanager.azurewebsites.net)
+
 ## Running the Project
 
 Use the following commands to run the project:
@@ -37,5 +43,4 @@ Use the following commands to run the project:
 
 To access the application, use the following domain:
 
-- Domain: [Ian Kamar's TASK MANAGER] (https://iankamar.github.io/task-manager-frontend/)
-<!-- (https://www.iankamar-taskmanager.cbu.net) -->
+- Domain: [Ian Kamar's TASK MANAGER](https://iankamar-taskmanager.azurewebsites.net)

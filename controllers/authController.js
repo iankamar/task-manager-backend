@@ -1,105 +1,138 @@
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
+const { loggers } = require("winston");
+const { ERROR_MESSAGES, RESPONSE_MESSAGES } = require("../config/constants");
+const envConfig = require("../config/envConfig");
+const logger = require("../config/logger");
+const BadRequestError = require("../errors/BadRequestError");
+const NotFoundError = require("../errors/NotFoundError");
+const ConflictError = require("../errors/ConflictError");
+const InternalServerError = require("../errors/InternalServerError");
 const User = require("../models/User");
-const { validationResult } = require("express-validator");
+const {
+  registerValidation,
+  loginValidation,
+  forgotPasswordValidation,
+} = require("../middleware/validationMiddleware");
 
-exports.register = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+const saltLength = 10;
+
+exports.signup = async (req, res, next) => {
+  // validate request
+  const { error } = registerValidation(req.body);
+  if (error) {
+    return next(new BadRequestError(error.details[0].message));
   }
 
-  const { email, password } = req.body;
+  const { email, password, name } = req.body;
 
   try {
-    let user = await User.findOne({ email });
+    const user = await User.findOne({ email });
 
     if (user) {
-      return res.status(400).json({ msg: "User already exists" });
+      return next(new ConflictError(ERROR_MESSAGES.USER_EXISTS));
     }
 
-    user = new User({
+    const salt = await bcrypt.genSalt(saltLength);
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    const newUser = new User({
       email,
-      password,
+      password: hashPassword,
+      name,
     });
 
-    const salt = await bcrypt.genSalt(10);
+    const savedUser = await newUser.save();
 
-    user.password = await bcrypt.hash(password, salt);
+    // remove password
+    const userObject = savedUser.toObject();
+    delete userObject.password;
 
-    await user.save();
-
-    const payload = {
-      user: {
-        id: user.id,
-      },
-    };
-
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: 360000 },
-      (err, token) => {
-        if (err) throw err;
-        res.json({ token });
-      }
-    );
+    return res.send({
+      user: userObject,
+      message: "User successfully registered",
+    });
   } catch (err) {
-    console.error("Registration error:", err.message);
-    res.status(500).send("Server error");
+    logger.error(err.message, {
+      router: req.originalUrl,
+      method: req.method,
+      requestedTime: new Date().toLocaleString(),
+    });
+    logger.error("Registration error:", err.message);
+    return next(new InternalServerError(ERROR_MESSAGES.SERVER_ERROR));
   }
 };
 
-exports.login = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+exports.signin = async (req, res, next) => {
+  // validate request
+  const { error } = loginValidation(req.body);
+  if (error) {
+    return next(new BadRequestError(error.details[0].message));
   }
-
   const { email, password } = req.body;
 
   try {
-    let user = await User.findOne({ email });
+    const user = await User.findOneAndUpdate(
+      { email },
+      { lastLogin: new Date() }
+    ).select("-__v");
 
     if (!user) {
-      return res.status(400).json({ msg: "Invalid Credentials" });
+      return next(new BadRequestError(ERROR_MESSAGES.INVALID_EMAIL));
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(400).json({ msg: "Invalid Credentials" });
+      return next(new BadRequestError(ERROR_MESSAGES.INVALID_PASSWORD));
     }
 
     const payload = {
       user: {
-        id: user.id,
+        _id: user._id,
       },
     };
 
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: 360000 },
-      (err, token) => {
-        if (err) throw err;
-        res.json({ token });
-      }
-    );
+    const accessToken = jwt.sign(payload, envConfig.jwtSecret, {
+      expiresIn: 360000,
+    });
+
+    // remove password
+    const userObject = user.toObject();
+    delete userObject.password;
+
+    const response = {
+      // user,
+      token: accessToken,
+    };
+
+    return res.send(response);
   } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).send("Server error");
+    logger.error(err.message, {
+      router: req.originalUrl,
+      method: req.method,
+      requestedTime: new Date().toLocaleString(),
+    });
+    loggers.error("Login error:", err);
+    return next(new InternalServerError(ERROR_MESSAGES.SERVER_ERROR));
   }
 };
 
-exports.forgotPassword = async (req, res) => {
+exports.forgotPassword = async (req, res, next) => {
+  // validate request
+  const { error } = forgotPasswordValidation(req.body);
+  if (error) {
+    return next(new BadRequestError(error.details[0].message));
+  }
   const { email } = req.body;
+  let user;
 
   try {
-    const user = await User.findOne({ email });
+    user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ msg: "User not found" });
+      return next(new NotFoundError(ERROR_MESSAGES.USER_NOT_FOUND));
     }
 
     const resetToken = crypto.randomBytes(20).toString("hex");
@@ -117,26 +150,23 @@ exports.forgotPassword = async (req, res) => {
 
     const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
-    console.log(message);
+    logger.info(message);
 
-    res.status(200).json({ success: true, data: "Email sent" });
+    return res
+      .status(200)
+      .json({ success: true, data: RESPONSE_MESSAGES.EMAIL_SENT });
   } catch (err) {
-    console.error("Forgot password error:", err);
+    logger.error(err.message, {
+      router: req.originalUrl,
+      method: req.method,
+      requestedTime: new Date().toLocaleString(),
+    });
+    logger.error(`Forgot password error: ${err}`);
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
 
     await user.save({ validateBeforeSave: false });
 
-    res.status(500).send("Server error");
-  }
-};
-
-exports.getMe = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("-password");
-    res.json(user);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
+    return next(new InternalServerError(ERROR_MESSAGES.SERVER_ERROR));
   }
 };

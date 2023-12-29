@@ -1,7 +1,10 @@
 # Logs
-logs
+logs/*
+!logs/logger.js
 *.log
 npm-debug.log*
+error.log
+request.log
 
 # Dependency directory
 node_modules
