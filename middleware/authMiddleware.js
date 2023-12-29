@@ -9,10 +9,10 @@ module.exports = async (req, res, next) => {
   if (authHeader) {
     const token = authHeader.split(" ")[1];
 
-    if (!token)
-      return res
-        .status(UnauthorizedError.statusCode)
-        .send({ message: ERROR_MESSAGES.AUTH_NO_TOKEN });
+    if (!token) {
+      return next(new UnauthorizedError(ERROR_MESSAGES.AUTH_NO_TOKEN));
+    }
+
     try {
       const decoded = jwt.verify(token, envConfig.jwtSecret);
       req.user = await User.findOne({ _id: decoded.user._id }).select(
@@ -20,15 +20,10 @@ module.exports = async (req, res, next) => {
       );
       next();
     } catch (err) {
-      return res
-        .status(UnauthorizedError.statusCode)
-        .send({ message: ERROR_MESSAGES.AUTH_INVALID_TOKEN });
+      return next(new UnauthorizedError(ERROR_MESSAGES.AUTH_INVALID_TOKEN));
     }
   } else {
-    return res
-      .status(UnauthorizedError.statusCode)
-      .send({ message: ERROR_MESSAGES.AUTH_NOTFOUND_TOKEN });
+    return next(new UnauthorizedError(ERROR_MESSAGES.AUTH_NOTFOUND_TOKEN));
   }
-
   return Promise.resolve();
 };

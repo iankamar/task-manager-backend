@@ -7,7 +7,7 @@ const InternalServerError = require("../errors/InternalServerError");
 const logger = require("../config/logger"); // add this line
 const { ERROR_MESSAGES } = require("../config/constants"); // add this line
 
-module.exports = function errorHandler(err, req, res) {
+module.exports = function errorHandler(err, req, res, next) {
   let error = err;
 
   logger.error({
@@ -25,7 +25,8 @@ module.exports = function errorHandler(err, req, res) {
     error instanceof ConflictError ||
     error instanceof InternalServerError
   ) {
-    return res.status(error.statusCode).json({ message: error.message });
+    res.status(error.statusCode).json({ message: error.message });
+    return next();
   }
 
   if (error.name === "ValidationError") {
@@ -36,5 +37,6 @@ module.exports = function errorHandler(err, req, res) {
     error = new InternalServerError(ERROR_MESSAGES.SERVER_ERROR);
   }
 
-  return res.status(error.statusCode || 500).json({ message: error.message });
+  res.status(error.statusCode || 500).json({ message: error.message });
+  return next();
 };
