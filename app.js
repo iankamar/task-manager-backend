@@ -16,17 +16,24 @@ const routes = require("./routes");
 const logger = require("./config/logger");
 const rateLimitMiddleware = require("./middleware/rateLimitMiddleware");
 const errorHandler = require("./middleware/errorHandler");
-//
+
 const corsOptions = {
-  origin: [
-    "http://localhost:3000",
-    "https://iankamar-taskmanager.azurewebsites.net",
-  ],
+  origin: ["https://iankamar-taskmanager.azurewebsites.net"],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
-
+/*
+const corsOptions = {
+  origin: [
+    "http://localhost:3000",
+    "https://iankamar-taskmanager.azurewebsites.net",
+  ], 
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+*/
 app.use(cors(corsOptions));
 
 // Connect to DB

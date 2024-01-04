@@ -146,8 +146,10 @@ exports.forgotPassword = async (req, res, next) => {
 
     await user.save();
 
+    const resetUrl = `https://iankamar-taskmanager.azurewebsites.net/passwordreset/${resetToken}`;
+    /*
     const resetUrl = `http://localhost:3000/passwordreset/${resetToken}`;
-
+    */
     const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
     logger.info(message);
