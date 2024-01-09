@@ -10,6 +10,7 @@ const NotFoundError = require("../errors/NotFoundError");
 const ConflictError = require("../errors/ConflictError");
 const InternalServerError = require("../errors/InternalServerError");
 const User = require("../models/User");
+
 const {
   registerValidation,
   loginValidation,
