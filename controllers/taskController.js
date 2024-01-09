@@ -32,13 +32,14 @@ exports.createTask = async (req, res, next) => {
   if (error) {
     return next(new BadRequestError(error.details[0].message));
   }
-  const { title, description, status } = req.body;
+  const { title, description, status, dueDate } = req.body;
 
   try {
     const newTask = new Task({
       title,
       description,
       status,
+      dueDate,
       user: req.user._id,
     });
 
@@ -77,12 +78,13 @@ exports.updateTask = async (req, res, next) => {
   if (error) {
     return next(new BadRequestError(error.details[0].message));
   }
-  const { title, description, status } = req.body;
+  const { title, description, status, dueDate } = req.body;
 
   const taskFields = {
     title,
     description,
     status,
+    dueDate,
     user: req.user,
   };
 
