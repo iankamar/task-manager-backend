@@ -1,6 +1,13 @@
 # Project Overview
 
 This project is a part of a web-based task manager application. The backend is built using Node.js with Express.js and a chosen database (e.g., MongoDB) to store user and task information.
+<img width="847" alt="Task Manager A" src="https://github.com/iankamar/task-manager-backend/assets/95672055/d0cd0815-6741-45e6-a3be-af9d96a4c8ae">
+<img width="848" alt="Task Manager B" src="https://github.com/iankamar/task-manager-backend/assets/95672055/f0a8aa12-a50e-41cb-a71a-f2147142e47b">
+<img width="844" alt="Task Manager C" src="https://github.com/iankamar/task-manager-backend/assets/95672055/d277baf8-8c42-41d5-8be7-80f79c6c0c58">
+<img width="721" alt="Task Manager D" src="https://github.com/iankamar/task-manager-backend/assets/95672055/7023ff15-053b-407f-ac2c-ce14a4c342fa">
+<img width="856" alt="Task Manager E" src="https://github.com/iankamar/task-manager-backend/assets/95672055/70996ccb-b7fa-4a4e-8d79-7b657fd3e458">
+<img width="857" alt="Task Manager F" src="https://github.com/iankamar/task-manager-backend/assets/95672055/29ca4997-f9db-4740-8503-0d688d91fe52">
+
 
 ## Key Features
 
