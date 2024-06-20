@@ -45,9 +45,10 @@ Use the following commands to run the project:
 
 - `npm run start` — Launches the server.
 - `npm run dev` — Launches the server with the hot reload feature.
-
+<!--
 ## Accessing the Application
 
 To access the application, use the following domain:
 
 - Domain: [Ian Kamar's TASK MANAGER](https://iankamar-taskmanager.azurewebsites.net)
+--!>
