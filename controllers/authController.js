@@ -147,7 +147,7 @@ exports.forgotPassword = async (req, res, next) => {
 
     await user.save();
 
-    const resetUrl = `https://iankamar-taskmanager.azurewebsites.net/passwordreset/${resetToken}`;
+    const resetUrl = `https://task-manager-frontend-fawn.vercel.app/passwordreset/${resetToken}`;
     /*
     const resetUrl = `http://localhost:3000/passwordreset/${resetToken}`;
     */
