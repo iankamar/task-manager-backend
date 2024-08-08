@@ -20,7 +20,7 @@ const errorHandler = require("./middleware/errorHandler");
 const corsOptions = {
   origin: [
     "http://localhost:3000",
-    "https://iankamar-taskmanager.azurewebsites.net",
+    "https://task-manager-frontend-fawn.vercel.app/",
   ],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: ["Content-Type", "Authorization"],

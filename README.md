@@ -37,7 +37,7 @@ The project utilizes the following technologies:
 
 Backend Domain
 
-- Domain: [BACKEND DOMAIN](https://api-iankamar-taskmanager.azurewebsites.net)
+- Domain: [BACKEND DOMAIN](https://task-manager-backend-livid.vercel.app/)
 
 ## Running the Project
 
