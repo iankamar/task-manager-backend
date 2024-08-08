@@ -36,8 +36,14 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
-*/
+
 app.use(cors(corsOptions));
+*/
+app.use(cors({
+  origin: 'https://task-manager-frontend-fawn.vercel.app', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+  credentials: true, 
+}));
 
 // Connect to DB
 mongoose
