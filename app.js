@@ -21,7 +21,7 @@ const corsOptions = {
   origin: [
     "http://localhost:3000",
     // Uncomment the line below if deploying to Vercel
-    // "https://task-manager-frontend-fawn.vercel.app",
+    "https://task-manager-frontend-fawn.vercel.app",
   ],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: ["Content-Type", "Authorization"],
