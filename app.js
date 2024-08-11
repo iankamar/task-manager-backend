@@ -20,30 +20,16 @@ const errorHandler = require("./middleware/errorHandler");
 const corsOptions = {
   origin: [
     "http://localhost:3000",
-    "https://task-manager-frontend-fawn.vercel.app/",
+    // Uncomment the line below if deploying to Vercel
+    // "https://task-manager-frontend-fawn.vercel.app",
   ],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
-/*
-const corsOptions = {
-  origin: [
-    "http://localhost:3000",
-    "https://iankamar-taskmanager.azurewebsites.net",
-  ], 
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-};
 
+// Apply CORS to all routes
 app.use(cors(corsOptions));
-*/
-app.use(cors({
-  origin: 'https://task-manager-frontend-fawn.vercel.app', 
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], 
-  credentials: true, 
-}));
 
 // Connect to DB
 mongoose
