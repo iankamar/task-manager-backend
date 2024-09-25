@@ -28,29 +28,29 @@
     "@hapi/joi": "^17.1.1",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.19.2",
-    "express-rate-limit": "^7.1.5",
-    "express-validator": "^7.0.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "express-validator": "^7.2.0",
     "helmet": "^7.1.0",
-    "http-proxy-middleware": "^2.0.6",
-    "joi": "^17.11.0",
+    "http-proxy-middleware": "^3.0.2",
+    "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "logger": "^0.0.1",
-    "mongoose": "^8.0.3",
+    "mongoose": "^8.6.3",
     "morgan": "^1.10.0",
     "path": "^0.12.7",
-    "winston": "^3.11.0",
-    "winston-daily-rotate-file": "^4.7.1"
+    "winston": "^3.14.2",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "eslint": "^8.2.0",
+    "eslint": "^9.11.1",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.25.2",
-    "husky": "^8.0.3",
-    "lint-staged": "^15.2.0",
-    "nodemon": "^2.0.15"
+    "eslint-plugin-import": "^2.30.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "nodemon": "^3.1.7"
   },
   "eslintConfig": {
     "extends": [
