@@ -50,6 +50,8 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
+
 
 app.get("/", (req, res) => {
   res.send("Task Management API SERVER is Running!");
